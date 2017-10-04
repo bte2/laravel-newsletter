@@ -4,11 +4,11 @@ namespace Spatie\Newsletter\Test;
 
 use Mockery;
 use DrewM\MailChimp\MailChimp;
-use PHPUnit_Framework_TestCase;
+use PHPUnit\Framework\TestCase;
 use Spatie\Newsletter\Newsletter;
 use Spatie\Newsletter\NewsletterListCollection;
 
-class NewsletterTest extends PHPUnit_Framework_TestCase
+class NewsletterTest extends TestCase
 {
     /** @var Mockery\Mock */
     protected $mailChimpApi;
@@ -20,7 +20,7 @@ class NewsletterTest extends PHPUnit_Framework_TestCase
     {
         $this->mailChimpApi = Mockery::mock(MailChimp::class);
 
-        $this->mailChimpApi->shouldReceive('getLastError')->andReturn(false);
+        $this->mailChimpApi->shouldReceive('success')->andReturn(true);
 
         $newsletterLists = NewsletterListCollection::createFromConfig(
             [
@@ -38,9 +38,13 @@ class NewsletterTest extends PHPUnit_Framework_TestCase
 
     public function tearDown()
     {
-        Mockery::close();
-
         parent::tearDown();
+
+        if ($container = Mockery::getContainer()) {
+            $this->addToAssertionCount($container->mockery_getExpectationCount());
+        }
+
+        Mockery::close();
     }
 
     /** @test */
@@ -60,6 +64,25 @@ class NewsletterTest extends PHPUnit_Framework_TestCase
         ]);
 
         $this->newsletter->subscribe($email);
+    }
+
+    /** @test */
+    public function it_can_subscribe_someone_as_pending()
+    {
+        $email = 'freek@spatie.be';
+
+        $url = 'lists/123/members';
+
+        $this->mailChimpApi->shouldReceive('post')->withArgs([
+            $url,
+            [
+                'email_address' => $email,
+                'status' => 'pending',
+                'email_type' => 'html',
+            ],
+        ]);
+
+        $this->newsletter->subscribePending($email);
     }
 
     /** @test */

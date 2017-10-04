@@ -1,4 +1,4 @@
-# Manage newsletters in Laravel 5
+# Manage newsletters in Laravel
 [![Latest Version](https://img.shields.io/github/release/spatie/laravel-newsletter.svg?style=flat-square)](https://github.com/spatie/laravel-newsletter/releases)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
 [![Build Status](https://img.shields.io/travis/spatie/laravel-newsletter/master.svg?style=flat-square)](https://travis-ci.org/spatie/laravel-newsletter)
@@ -21,6 +21,9 @@ Newsletter::subscribe('sam.vines@discworld.com', ['firstName'=>'Sam', 'lastName'
 //Subscribe someone to a specific list by using the third argument:
 Newsletter::subscribe('nanny.ogg@discworld.com', ['firstName'=>'Nanny', 'lastName'=>'Ogg'], 'Name of your list');
 
+//Subscribe someone to a specific list and require them to confirm via email:
+Newsletter::subscribePending('nanny.ogg@discworld.com', ['firstName'=>'Nanny', 'lastName'=>'Ogg'], 'Name of your list');
+
 //Subscribe or update someone
 Newsletter::subscribeOrUpdate('sam.vines@discworld.com', ['firstName'=>'Foo', 'lastName'=>'Bar']);
 
@@ -35,6 +38,9 @@ Newsletter::getMemberActivity('lord.vetinari@discworld.com');
 
 //Get the members for a given list, optionally filtered by passing a second array of parameters
 Newsletter::getMembers();
+
+//Check if a member is subscribed to a list
+Newsletter::isSubscribed('rincewind@discworld.com');
 
 //Returns a boolean
 Newsletter::hasMember('greebo@discworld.com');
@@ -63,24 +69,7 @@ composer require spatie/laravel-newsletter
 
 You must also install this service provider.
 
-```php
-// config/app.php
-'providers' => [
-    ...
-    Spatie\Newsletter\NewsletterServiceProvider::class,
-    ...
-];
-```
-
-If you want to make use of the facade you must install it as well.
-
-```php
-// config/app.php
-'aliases' => [
-    ..
-    'Newsletter' => Spatie\Newsletter\NewsletterFacade::class,
-];
-```
+The package will automatically register itself.
 
 To publish the config file to `app/config/laravel-newsletter.php` run:
 
@@ -88,7 +77,7 @@ To publish the config file to `app/config/laravel-newsletter.php` run:
 php artisan vendor:publish --provider="Spatie\Newsletter\NewsletterServiceProvider"
 ```
 
-This will publish a file `laravel-newsletter.php` in your config directory with the following contents:
+This will publish a file `newsletter.php` in your config directory with the following contents:
 ```php
 return [
 
@@ -171,7 +160,7 @@ You can also subscribe and/or update someone. The person will be subscribed or u
  ```php
  Newsletter::subscribeOrUpdate('rincewind@discworld.com', ['firstName'=>'Foo', 'lastname'=>'Bar']);
  ```
- 
+
 You can subscribe someone to one or more specific group(s)/interest(s) by using the fourth argument:
 
 ```php
@@ -210,24 +199,24 @@ There's also a convenience method to check if someone is already subscribed:
 Newsletter::hasMember('nanny.ogg@discworld.com'); //returns a bool
 ```
 
+In addition to this you can also check if a user is subscribed to your list:
+
+```php
+Newsletter::isSubscribed('lord.vetinari@discworld.com'); //returns a bool
+```
+
 ### Creating a campaign
 
-This is how you create a campaign:
+This the signature of `createCampaign`:
 ```php
-/**
- * @param string $fromName
- * @param string $replyTo
- * @param string $subject
- * @param string $html
- * @param string $listName
- * @param array  $options
- * @param array  $contentOptions
- *
- * @return array|bool
- *
- * @throws \Spatie\Newsletter\Exceptions\InvalidNewsletterList
- */
-public function createCampaign($fromName, $replyTo, $subject, $html = '', $listName = '', $options = [], $contentOptions = [])
+public function createCampaign(
+        string $fromName,
+        string $replyTo,
+        string $subject,
+        string $html = '',
+        string $listName = '',
+        array $options = [],
+        array $contentOptions = [])
 ```
 
 Note the campaign will only be created, no mails will be sent out.
